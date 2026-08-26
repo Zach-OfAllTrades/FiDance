@@ -1,3 +1,4 @@
+import { Button, Card, EmptyState, Row, Text } from "@zach-ofalltrades/juice";
 import type { Route } from "./+types/budgets";
 
 export function meta() {
@@ -10,27 +11,27 @@ export function meta() {
 export default function Budgets() {
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-6)" }}>
-        <p style={{ color: "var(--color-text-secondary)" }}>
+      <Row
+        style={{ marginBottom: "var(--space-6)" }}
+        actions={<Button variant="primary">+ Set Budget</Button>}
+      >
+        <Text tone="muted">
           Set monthly budgets and track actual spending vs. planned.
-        </p>
-        <button className="btn btn--primary">+ Set Budget</button>
-      </div>
+        </Text>
+      </Row>
 
-      <div className="card">
-        <div className="card__header">
-          <h2 className="card__title">Budget vs. Actual</h2>
-        </div>
-        <div className="card__body">
-          <div className="empty-state">
-            <div className="empty-state__icon">📋</div>
-            <div className="empty-state__title">No budgets configured</div>
-            <div className="empty-state__description">
-              Create budgets for each spending category to track your progress.
-            </div>
-          </div>
-        </div>
-      </div>
+      <Card>
+        <Card.Header>
+          <Card.Title>Budget vs. Actual</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          <EmptyState
+            icon="📋"
+            title="No budgets configured"
+            description="Create budgets for each spending category to track your progress."
+          />
+        </Card.Body>
+      </Card>
     </div>
   );
 }

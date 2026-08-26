@@ -1,4 +1,4 @@
-import type { Route } from "./+types/savings-goals";
+import { Button, Card, EmptyState, Row, Text } from "@zach-ofalltrades/juice";
 
 export function meta() {
   return [
@@ -10,27 +10,25 @@ export function meta() {
 export default function SavingsGoals() {
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-6)" }}>
-        <p style={{ color: "var(--color-text-secondary)" }}>
-          Set savings targets and track your progress.
-        </p>
-        <button className="btn btn--primary">+ New Goal</button>
-      </div>
+      <Row
+        style={{ marginBottom: "var(--space-6)" }}
+        actions={<Button variant="primary">+ New Goal</Button>}
+      >
+        <Text tone="muted">Set savings targets and track your progress.</Text>
+      </Row>
 
-      <div className="card">
-        <div className="card__header">
-          <h2 className="card__title">Your Goals</h2>
-        </div>
-        <div className="card__body">
-          <div className="empty-state">
-            <div className="empty-state__icon">🎯</div>
-            <div className="empty-state__title">No savings goals</div>
-            <div className="empty-state__description">
-              Create goals like Emergency Fund, Vacation, or Home Renovation to track your savings progress.
-            </div>
-          </div>
-        </div>
-      </div>
+      <Card>
+        <Card.Header>
+          <Card.Title>Your Goals</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          <EmptyState
+            icon="🎯"
+            title="No savings goals"
+            description="Create goals like Emergency Fund, Vacation, or Home Renovation to track your savings progress."
+          />
+        </Card.Body>
+      </Card>
     </div>
   );
 }

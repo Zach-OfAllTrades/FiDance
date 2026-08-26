@@ -1,4 +1,4 @@
-import type { Route } from "./+types/net-worth";
+import { Card, EmptyState, StatGrid, Text } from "@zach-ofalltrades/juice";
 
 export function meta() {
   return [
@@ -10,55 +10,42 @@ export function meta() {
 export default function NetWorth() {
   return (
     <div>
-      <p style={{ color: "var(--color-text-secondary)", marginBottom: "var(--space-6)" }}>
+      <Text tone="muted" style={{ marginBottom: "var(--space-6)" }}>
         Track your total assets, liabilities, and equity over time.
-      </p>
+      </Text>
 
-      <div className="kpi-grid" style={{ marginBottom: "var(--space-6)" }}>
-        <div className="kpi-card">
-          <div className="kpi-card__label">Total Assets</div>
-          <div className="kpi-card__value kpi-card__value--positive">$0.00</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-card__label">Total Liabilities</div>
-          <div className="kpi-card__value kpi-card__value--negative">$0.00</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-card__label">Net Worth</div>
-          <div className="kpi-card__value">$0.00</div>
-        </div>
-      </div>
+      <StatGrid style={{ marginBottom: "var(--space-6)" }}>
+        <StatGrid.Card label="Total Assets" value="$0.00" tone="positive" />
+        <StatGrid.Card label="Total Liabilities" value="$0.00" tone="negative" />
+        <StatGrid.Card label="Net Worth" value="$0.00" />
+      </StatGrid>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-6)" }}>
-        <div className="card">
-          <div className="card__header">
-            <h2 className="card__title">Assets</h2>
-          </div>
-          <div className="card__body">
-            <div className="empty-state">
-              <div className="empty-state__icon">🏡</div>
-              <div className="empty-state__title">No asset values entered</div>
-              <div className="empty-state__description">
-                Enter your real estate value, vehicle value, and other assets.
-              </div>
-            </div>
-          </div>
-        </div>
+        <Card>
+          <Card.Header>
+            <Card.Title>Assets</Card.Title>
+          </Card.Header>
+          <Card.Body>
+            <EmptyState
+              icon="🏡"
+              title="No asset values entered"
+              description="Enter your real estate value, vehicle value, and other assets."
+            />
+          </Card.Body>
+        </Card>
 
-        <div className="card">
-          <div className="card__header">
-            <h2 className="card__title">Liabilities</h2>
-          </div>
-          <div className="card__body">
-            <div className="empty-state">
-              <div className="empty-state__icon">📉</div>
-              <div className="empty-state__title">No liabilities entered</div>
-              <div className="empty-state__description">
-                Enter your mortgage, student loans, auto loans, and other debts.
-              </div>
-            </div>
-          </div>
-        </div>
+        <Card>
+          <Card.Header>
+            <Card.Title>Liabilities</Card.Title>
+          </Card.Header>
+          <Card.Body>
+            <EmptyState
+              icon="📉"
+              title="No liabilities entered"
+              description="Enter your mortgage, student loans, auto loans, and other debts."
+            />
+          </Card.Body>
+        </Card>
       </div>
     </div>
   );

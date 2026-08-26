@@ -1,3 +1,4 @@
+import { Button, Card, EmptyState, Row, Text } from "@zach-ofalltrades/juice";
 import type { Route } from "./+types/fixed-expenses";
 
 export function meta() {
@@ -10,27 +11,27 @@ export function meta() {
 export default function FixedExpenses() {
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-6)" }}>
-        <p style={{ color: "var(--color-text-secondary)" }}>
+      <Row
+        style={{ marginBottom: "var(--space-6)" }}
+        actions={<Button variant="primary">+ Add Fixed Expense</Button>}
+      >
+        <Text tone="muted">
           Manage your recurring bills — mortgage, utilities, subscriptions, and more.
-        </p>
-        <button className="btn btn--primary">+ Add Fixed Expense</button>
-      </div>
+        </Text>
+      </Row>
 
-      <div className="card">
-        <div className="card__header">
-          <h2 className="card__title">Monthly Fixed Expenses</h2>
-        </div>
-        <div className="card__body">
-          <div className="empty-state">
-            <div className="empty-state__icon">🏠</div>
-            <div className="empty-state__title">No fixed expenses set up</div>
-            <div className="empty-state__description">
-              Add your recurring bills to track expected vs. actual payments each month.
-            </div>
-          </div>
-        </div>
-      </div>
+      <Card>
+        <Card.Header>
+          <Card.Title>Monthly Fixed Expenses</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          <EmptyState
+            icon="🏠"
+            title="No fixed expenses set up"
+            description="Add your recurring bills to track expected vs. actual payments each month."
+          />
+        </Card.Body>
+      </Card>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { Badge, Button, Card, EmptyState, Row, Text } from "@zach-ofalltrades/juice";
 import { prisma } from "~/db.server";
 import { CATEGORY_TYPES } from "~/lib/constants";
 import type { Route } from "./+types/categories";
@@ -41,33 +42,39 @@ export default function Categories({ loaderData }: Route.ComponentProps) {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-6)" }}>
-        <p style={{ color: "var(--color-text-secondary)" }}>
+      <Row
+        style={{ marginBottom: "var(--space-6)" }}
+        actions={<Button variant="primary">+ Add Category</Button>}
+      >
+        <Text tone="muted">
           Manage the categories used across transactions, expenses, and income.
-        </p>
-        <button className="btn btn--primary">+ Add Category</button>
-      </div>
+        </Text>
+      </Row>
 
       {Object.entries(grouped).length === 0 ? (
-        <div className="card">
-          <div className="card__body">
-            <div className="empty-state">
-              <div className="empty-state__icon">🏷️</div>
-              <div className="empty-state__title">No categories</div>
-              <div className="empty-state__description">
-                Run the database seed to create default categories.
-              </div>
-            </div>
-          </div>
-        </div>
+        <Card>
+          <Card.Body>
+            <EmptyState
+              icon="🏷️"
+              title="No categories"
+              description="Run the database seed to create default categories."
+            />
+          </Card.Body>
+        </Card>
       ) : (
         Object.entries(grouped).map(([type, cats]) => (
-          <div key={type} className="card" style={{ marginBottom: "var(--space-6)" }}>
-            <div className="card__header">
-              <h2 className="card__title">{TYPE_LABELS[type] || type} Categories</h2>
-              <span className="badge badge--neutral">{cats.length}</span>
-            </div>
-            <div className="card__body">
+          <Card key={type} style={{ marginBottom: "var(--space-6)" }}>
+            <Card.Header
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Card.Title>{TYPE_LABELS[type] || type} Categories</Card.Title>
+              <Badge>{cats.length}</Badge>
+            </Card.Header>
+            <Card.Body>
               <table className="data-table">
                 <thead>
                   <tr>
@@ -88,22 +95,20 @@ export default function Categories({ loaderData }: Route.ComponentProps) {
                       <td style={{ color: "var(--color-text-primary)" }}>
                         {cat.name}
                         {cat.isDefault && (
-                          <span className="badge badge--neutral" style={{ marginLeft: "var(--space-2)" }}>
-                            Default
-                          </span>
+                          <Badge style={{ marginLeft: "var(--space-2)" }}>Default</Badge>
                         )}
                       </td>
                       <td>
-                        <span className={`badge ${cat.isActive ? "badge--success" : "badge--danger"}`}>
+                        <Badge variant={cat.isActive ? "success" : "danger"}>
                           {cat.isActive ? "Active" : "Inactive"}
-                        </span>
+                        </Badge>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
-          </div>
+            </Card.Body>
+          </Card>
         ))
       )}
     </div>

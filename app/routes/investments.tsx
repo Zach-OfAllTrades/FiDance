@@ -1,4 +1,4 @@
-import type { Route } from "./+types/investments";
+import { Button, Card, EmptyState, Row, Text } from "@zach-ofalltrades/juice";
 
 export function meta() {
   return [
@@ -10,27 +10,25 @@ export function meta() {
 export default function Investments() {
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-6)" }}>
-        <p style={{ color: "var(--color-text-secondary)" }}>
-          Track portfolio growth across all investment accounts.
-        </p>
-        <button className="btn btn--primary">+ Add Account</button>
-      </div>
+      <Row
+        style={{ marginBottom: "var(--space-6)" }}
+        actions={<Button variant="primary">+ Add Account</Button>}
+      >
+        <Text tone="muted">Track portfolio growth across all investment accounts.</Text>
+      </Row>
 
-      <div className="card">
-        <div className="card__header">
-          <h2 className="card__title">Investment Accounts</h2>
-        </div>
-        <div className="card__body">
-          <div className="empty-state">
-            <div className="empty-state__icon">📈</div>
-            <div className="empty-state__title">No investment accounts</div>
-            <div className="empty-state__description">
-              Add your retirement accounts, brokerage accounts, and savings accounts to track growth.
-            </div>
-          </div>
-        </div>
-      </div>
+      <Card>
+        <Card.Header>
+          <Card.Title>Investment Accounts</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          <EmptyState
+            icon="📈"
+            title="No investment accounts"
+            description="Add your retirement accounts, brokerage accounts, and savings accounts to track growth."
+          />
+        </Card.Body>
+      </Card>
     </div>
   );
 }

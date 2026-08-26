@@ -1,4 +1,4 @@
-import type { Route } from "./+types/income";
+import { Button, Card, EmptyState, Row, Text } from "@zach-ofalltrades/juice";
 
 export function meta() {
   return [
@@ -10,43 +10,41 @@ export function meta() {
 export default function Income() {
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-6)" }}>
-        <p style={{ color: "var(--color-text-secondary)" }}>
+      <Row
+        style={{ marginBottom: "var(--space-6)" }}
+        actions={<Button variant="primary">+ Add Income</Button>}
+      >
+        <Text tone="muted">
           Track payroll deductions and one-off income (freelance, sales, gifts, refunds).
-        </p>
-        <button className="btn btn--primary">+ Add Income</button>
-      </div>
+        </Text>
+      </Row>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-6)" }}>
-        <div className="card">
-          <div className="card__header">
-            <h2 className="card__title">Payroll</h2>
-          </div>
-          <div className="card__body">
-            <div className="empty-state">
-              <div className="empty-state__icon">📄</div>
-              <div className="empty-state__title">No payroll entries</div>
-              <div className="empty-state__description">
-                Log your paychecks with full deduction breakdowns.
-              </div>
-            </div>
-          </div>
-        </div>
+        <Card>
+          <Card.Header>
+            <Card.Title>Payroll</Card.Title>
+          </Card.Header>
+          <Card.Body>
+            <EmptyState
+              icon="📄"
+              title="No payroll entries"
+              description="Log your paychecks with full deduction breakdowns."
+            />
+          </Card.Body>
+        </Card>
 
-        <div className="card">
-          <div className="card__header">
-            <h2 className="card__title">Other Income</h2>
-          </div>
-          <div className="card__body">
-            <div className="empty-state">
-              <div className="empty-state__icon">💰</div>
-              <div className="empty-state__title">No other income</div>
-              <div className="empty-state__description">
-                Track freelance earnings, reimbursements, gifts, and other one-off income.
-              </div>
-            </div>
-          </div>
-        </div>
+        <Card>
+          <Card.Header>
+            <Card.Title>Other Income</Card.Title>
+          </Card.Header>
+          <Card.Body>
+            <EmptyState
+              icon="💰"
+              title="No other income"
+              description="Track freelance earnings, reimbursements, gifts, and other one-off income."
+            />
+          </Card.Body>
+        </Card>
       </div>
     </div>
   );

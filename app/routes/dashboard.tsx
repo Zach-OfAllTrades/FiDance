@@ -1,10 +1,12 @@
+import { Button, Card, EmptyState, StatGrid, Text } from "@zach-ofalltrades/juice";
+import { useNavigate } from "react-router";
 import { prisma } from "~/db.server";
 import {
-  computeEndingBalance,
   computeAvailableCredit,
-  computeTakeHomePay,
+  computeEndingBalance,
   computeEndingCash,
   computeNetWorth,
+  computeTakeHomePay,
   formatCurrency,
   formatPercent,
 } from "~/lib/computations";
@@ -40,7 +42,16 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 
   // Fetch all data for this month in parallel
-  const [transactions, payrollEntries, incomes, creditCards, creditCardEntries, investmentEntries, fixedExpenseEntries, netWorthSnapshot] = await Promise.all([
+  const [
+    transactions,
+    payrollEntries,
+    incomes,
+    creditCards,
+    creditCardEntries,
+    investmentEntries,
+    fixedExpenseEntries,
+    netWorthSnapshot,
+  ] = await Promise.all([
     prisma.transaction.findMany({ where: { userId: user.id, monthYear } }),
     prisma.payrollEntry.findMany({ where: { userId: user.id, monthYear } }),
     prisma.income.findMany({ where: { userId: user.id, monthYear } }),
@@ -52,8 +63,9 @@ export async function loader({ request }: Route.LoaderArgs) {
   ]);
 
   // Compute KPIs
-  const totalSpending = transactions.reduce((sum, tx) => sum + tx.amount, 0)
-    + fixedExpenseEntries.reduce((sum, fe) => sum + (fe.actualAmount || 0), 0);
+  const totalSpending =
+    transactions.reduce((sum, tx) => sum + tx.amount, 0) +
+    fixedExpenseEntries.reduce((sum, fe) => sum + (fe.actualAmount || 0), 0);
 
   const payrollTakeHome = payrollEntries.reduce((sum, p) => sum + computeTakeHomePay(p), 0);
   const otherIncome = incomes.reduce((sum, i) => sum + i.amount, 0);
@@ -65,8 +77,12 @@ export async function loader({ request }: Route.LoaderArgs) {
   const totalCreditDebt = creditCardEntries.reduce((sum, ce) => sum + computeEndingBalance(ce), 0);
 
   // Cash flow (simplified — starting cash would need previous month's ending)
-  const variableCashExpenses = transactions.filter(tx => tx.isCash).reduce((sum, tx) => sum + tx.amount, 0);
-  const fixedCashExpenses = fixedExpenseEntries.filter(fe => fe.isCash).reduce((sum, fe) => sum + (fe.actualAmount || 0), 0);
+  const variableCashExpenses = transactions
+    .filter((tx) => tx.isCash)
+    .reduce((sum, tx) => sum + tx.amount, 0);
+  const fixedCashExpenses = fixedExpenseEntries
+    .filter((fe) => fe.isCash)
+    .reduce((sum, fe) => sum + (fe.actualAmount || 0), 0);
   const endingCash = computeEndingCash({
     startingCash: 0, // TODO: carry forward from previous month
     payrollTakeHome,
@@ -107,87 +123,90 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export default function Dashboard({ loaderData }: Route.ComponentProps) {
   const { monthLabel, kpis } = loaderData;
+  const navigate = useNavigate();
 
   const kpiCards = [
     {
       label: "Net Worth",
       value: formatCurrency(kpis.netWorth),
-      className: kpis.netWorth >= 0 ? "kpi-card__value--positive" : "kpi-card__value--negative",
+      tone: kpis.netWorth >= 0 ? ("positive" as const) : ("negative" as const),
     },
     {
       label: "Monthly Income",
       value: formatCurrency(kpis.totalIncome),
-      className: "kpi-card__value--positive",
+      tone: "positive" as const,
     },
     {
       label: "Monthly Spending",
       value: formatCurrency(kpis.totalSpending),
-      className: "kpi-card__value--negative",
+      tone: "negative" as const,
     },
     {
       label: "Savings Rate",
       value: formatPercent(kpis.savingsRate),
-      className: kpis.savingsRate >= 0.2 ? "kpi-card__value--positive" : "kpi-card__value--negative",
+      tone: kpis.savingsRate >= 0.2 ? ("positive" as const) : ("negative" as const),
     },
     {
       label: "Available Credit",
       value: formatCurrency(kpis.availableCredit),
-      className: "",
+      tone: "default" as const,
     },
     {
       label: "Cash Balance",
       value: formatCurrency(kpis.endingCash),
-      className: kpis.endingCash >= 0 ? "kpi-card__value--positive" : "kpi-card__value--negative",
+      tone: kpis.endingCash >= 0 ? ("positive" as const) : ("negative" as const),
     },
   ];
 
   return (
     <div>
-      <div style={{ marginBottom: "var(--space-6)", color: "var(--color-text-secondary)" }}>
-        Showing data for <strong style={{ color: "var(--color-text-primary)" }}>{monthLabel}</strong>
-      </div>
+      <Text tone="muted" style={{ marginBottom: "var(--space-6)" }}>
+        Showing data for{" "}
+        <strong style={{ color: "var(--color-text-primary)" }}>{monthLabel}</strong>
+      </Text>
 
-      <div className="kpi-grid">
+      <StatGrid style={{ marginBottom: "var(--space-8)" }}>
         {kpiCards.map((card) => (
-          <div key={card.label} className="kpi-card">
-            <div className="kpi-card__label">{card.label}</div>
-            <div className={`kpi-card__value ${card.className}`}>{card.value}</div>
-          </div>
+          <StatGrid.Card key={card.label} label={card.label} value={card.value} tone={card.tone} />
         ))}
-      </div>
+      </StatGrid>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-6)" }}>
-        <div className="card">
-          <div className="card__header">
-            <h2 className="card__title">Recent Transactions</h2>
-          </div>
-          <div className="card__body">
-            <div className="empty-state">
-              <div className="empty-state__icon">📝</div>
-              <div className="empty-state__title">No transactions yet</div>
-              <div className="empty-state__description">
-                Start logging your expenses to see them here.
-              </div>
-              <a href="/transactions" className="btn btn--primary">Add Transaction</a>
-            </div>
-          </div>
-        </div>
+        <Card>
+          <Card.Header>
+            <Card.Title>Recent Transactions</Card.Title>
+          </Card.Header>
+          <Card.Body>
+            <EmptyState
+              icon="📝"
+              title="No transactions yet"
+              description="Start logging your expenses to see them here."
+              action={
+                <Button variant="primary" onClick={() => navigate("/transactions")}>
+                  Add Transaction
+                </Button>
+              }
+            />
+          </Card.Body>
+        </Card>
 
-        <div className="card">
-          <div className="card__header">
-            <h2 className="card__title">Budget Overview</h2>
-          </div>
-          <div className="card__body">
-            <div className="empty-state">
-              <div className="empty-state__icon">📊</div>
-              <div className="empty-state__title">No budgets set</div>
-              <div className="empty-state__description">
-                Set monthly budgets to track spending by category.
-              </div>
-              <a href="/budgets" className="btn btn--primary">Set Budgets</a>
-            </div>
-          </div>
-        </div>
+        <Card>
+          <Card.Header>
+            <Card.Title>Budget Overview</Card.Title>
+          </Card.Header>
+          <Card.Body>
+            <EmptyState
+              icon="📊"
+              title="No budgets set"
+              description="Set monthly budgets to track spending by category."
+              action={
+                <Button variant="primary" onClick={() => navigate("/budgets")}>
+                  Set Budgets
+                </Button>
+              }
+            />
+          </Card.Body>
+        </Card>
       </div>
     </div>
   );
