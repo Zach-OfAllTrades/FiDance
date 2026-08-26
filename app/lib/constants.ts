@@ -21,8 +21,7 @@ export const PAY_FREQUENCIES = {
   MONTHLY: "MONTHLY",
 } as const;
 
-export type PayFrequency =
-  (typeof PAY_FREQUENCIES)[keyof typeof PAY_FREQUENCIES];
+export type PayFrequency = (typeof PAY_FREQUENCIES)[keyof typeof PAY_FREQUENCIES];
 
 export const PAY_FREQUENCY_LABELS: Record<PayFrequency, string> = {
   WEEKLY: "Weekly",

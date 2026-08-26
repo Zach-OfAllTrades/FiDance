@@ -3,9 +3,7 @@ import { NavLink, Outlet, useLocation } from "react-router";
 const NAV_SECTIONS = [
   {
     label: "Overview",
-    items: [
-      { to: "/", icon: "📊", label: "Dashboard" },
-    ],
+    items: [{ to: "/", icon: "📊", label: "Dashboard" }],
   },
   {
     label: "Money In & Out",
@@ -26,15 +24,11 @@ const NAV_SECTIONS = [
   },
   {
     label: "Big Picture",
-    items: [
-      { to: "/net-worth", icon: "💎", label: "Net Worth" },
-    ],
+    items: [{ to: "/net-worth", icon: "💎", label: "Net Worth" }],
   },
   {
     label: "Settings",
-    items: [
-      { to: "/categories", icon: "🏷️", label: "Categories" },
-    ],
+    items: [{ to: "/categories", icon: "🏷️", label: "Categories" }],
   },
 ];
 

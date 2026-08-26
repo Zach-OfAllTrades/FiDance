@@ -31,10 +31,7 @@ export function computeAvailableCredit(
   entries: CreditCardEntryData[]
 ): number {
   const totalLimits = cards.reduce((sum, c) => sum + c.creditLimit, 0);
-  const totalDebt = entries.reduce(
-    (sum, e) => sum + computeEndingBalance(e),
-    0
-  );
+  const totalDebt = entries.reduce((sum, e) => sum + computeEndingBalance(e), 0);
   return totalLimits - totalDebt;
 }
 
@@ -51,9 +48,7 @@ export interface InvestmentEntryData {
 /**
  * Computes the dollar return for an investment entry.
  */
-export function computeInvestmentReturnDollar(
-  entry: InvestmentEntryData
-): number {
+export function computeInvestmentReturnDollar(entry: InvestmentEntryData): number {
   return entry.endingBalance - entry.startingBalance - entry.contributions;
 }
 
@@ -61,9 +56,7 @@ export function computeInvestmentReturnDollar(
  * Computes the percentage return for an investment entry.
  * Returns null if the base (starting + contributions) is zero to avoid division by zero.
  */
-export function computeInvestmentReturnPercent(
-  entry: InvestmentEntryData
-): number | null {
+export function computeInvestmentReturnPercent(entry: InvestmentEntryData): number | null {
   const base = entry.startingBalance + entry.contributions;
   if (base === 0) return null;
   return (entry.endingBalance - base) / base;
@@ -219,10 +212,7 @@ export function computeNetWorth(inputs: NetWorthInputs): NetWorthResult {
  * Derives the split ratio from totalAmount and user's portion.
  * Returns 1 if totalAmount is 0 or null (no split).
  */
-export function computeSplitRatio(
-  totalAmount: number | null,
-  userAmount: number
-): number {
+export function computeSplitRatio(totalAmount: number | null, userAmount: number): number {
   if (totalAmount == null || totalAmount === 0) return 1;
   return userAmount / totalAmount;
 }

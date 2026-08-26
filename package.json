@@ -7,24 +7,31 @@
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "biome lint ./app",
+    "format": "biome format --write ./app",
+    "check": "biome check ./app",
     "db:migrate": "npx prisma migrate dev",
     "db:seed": "npx prisma db seed",
     "db:studio": "npx prisma studio",
     "db:reset": "npx prisma migrate reset"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.3",
     "@react-router/node": "^8",
     "@react-router/serve": "^8",
+    "@zach-ofalltrades/juice": "file:../juice",
     "isbot": "^5.1.36",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "react-router": "^8",
-    "@prisma/client": "^6.19.3"
+    "react-router": "^8"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.10",
     "@react-router/dev": "^8",
     "@types/node": "^22",
     "@types/react": "^19.2.14",
@@ -32,6 +39,7 @@
     "prisma": "^6.19.3",
     "tsx": "^4.23.12",
     "typescript": "^5.9.3",
-    "vite": "^8.0.3"
+    "vite": "^8.0.3",
+    "vitest": "^4.1.11"
   }
 }

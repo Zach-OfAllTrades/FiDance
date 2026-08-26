@@ -1,3 +1,4 @@
+import { Button, Card, EmptyState, Row, Text } from "@zach-ofalltrades/juice";
 import type { Route } from "./+types/credit-cards";
 
 export function meta() {
@@ -10,27 +11,27 @@ export function meta() {
 export default function CreditCards() {
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-6)" }}>
-        <p style={{ color: "var(--color-text-secondary)" }}>
+      <Row
+        style={{ marginBottom: "var(--space-6)" }}
+        actions={<Button variant="primary">+ Add Credit Card</Button>}
+      >
+        <Text tone="muted">
           Track credit card balances, payments, interest, and available credit.
-        </p>
-        <button className="btn btn--primary">+ Add Credit Card</button>
-      </div>
+        </Text>
+      </Row>
 
-      <div className="card">
-        <div className="card__header">
-          <h2 className="card__title">Credit Card Accounts</h2>
-        </div>
-        <div className="card__body">
-          <div className="empty-state">
-            <div className="empty-state__icon">🏦</div>
-            <div className="empty-state__title">No credit cards added</div>
-            <div className="empty-state__description">
-              Add your credit cards to track debt, payments, and available credit.
-            </div>
-          </div>
-        </div>
-      </div>
+      <Card>
+        <Card.Header>
+          <Card.Title>Credit Card Accounts</Card.Title>
+        </Card.Header>
+        <Card.Body>
+          <EmptyState
+            icon="🏦"
+            title="No credit cards added"
+            description="Add your credit cards to track debt, payments, and available credit."
+          />
+        </Card.Body>
+      </Card>
     </div>
   );
 }
