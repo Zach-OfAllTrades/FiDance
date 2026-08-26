@@ -1,0 +1,308 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite" // swap to "postgresql" for prod
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────────────────────────────────
+// User (future-proofing for auth)
+// ──────────────────────────────────────────────
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String?  @unique
+  payFrequency String   @default("BIWEEKLY") // WEEKLY, BIWEEKLY, SEMI_MONTHLY, MONTHLY
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  transactions      Transaction[]
+  monthlyBudgets    MonthlyBudget[]
+  fixedExpenseEntries FixedExpenseEntry[]
+  creditCardEntries CreditCardEntry[]
+  investmentEntries InvestmentEntry[]
+  payrollEntries    PayrollEntry[]
+  incomes           Income[]
+  netWorthSnapshots NetWorthSnapshot[]
+  savingsGoals      SavingsGoal[]
+  categories        Category[]
+}
+
+// ──────────────────────────────────────────────
+// User-Editable Categories
+// ──────────────────────────────────────────────
+model Category {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String   // "Grocery", "Dining", etc.
+  type      String   // TRANSACTION, FIXED_EXPENSE, INCOME, INVESTMENT, CREDIT_CARD
+  color     String?  // hex color for charts
+  icon      String?  // optional icon identifier
+  sortOrder Int      @default(0)
+  isDefault Boolean  @default(false) // seeded defaults
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, name, type])
+  @@index([userId, type])
+}
+
+// ──────────────────────────────────────────────
+// 1. Transactions (Variable Spending)
+// ──────────────────────────────────────────────
+model Transaction {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  date        DateTime
+  monthYear   String   // "2026-01" — derived from date, indexed for filtering
+  description String
+  categoryId  String   // FK to Category (type=TRANSACTION)
+  tags        String   @default("[]") // JSON array string (SQLite-friendly)
+  amount      Float    // always YOUR portion (what comes out of your cash / is payable by you)
+  totalAmount Float?   // full charge / bill amount (null if not split). User enters this FIRST.
+  splitRatio  Float    @default(0.5) // your share ratio — auto-derived: amount / totalAmount
+  isCash      Boolean  @default(false)
+  isSplit     Boolean  @default(false)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId, monthYear])
+  @@index([userId, categoryId])
+}
+
+// ──────────────────────────────────────────────
+// 2. Monthly Budgets
+// ──────────────────────────────────────────────
+model MonthlyBudget {
+  id             String @id @default(cuid())
+  userId         String
+  user           User   @relation(fields: [userId], references: [id])
+  monthYear      String // "2026-01"
+  categoryId     String // FK to Category (type=TRANSACTION)
+  budgetedAmount Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // actualAmount, variance, splitTotal are COMPUTED at query time
+  // from Transactions — not stored. Single source of truth.
+
+  @@unique([userId, monthYear, categoryId])
+}
+
+// ──────────────────────────────────────────────
+// 3. Fixed & Recurring Expenses (template + per-month entries)
+// ──────────────────────────────────────────────
+model FixedExpense {
+  id             String  @id @default(cuid())
+  name           String  // "Mortgage", "Electric", "Spotify"
+  categoryId     String  // FK to Category (type=FIXED_EXPENSE)
+  expectedAmount Float
+  dueDay         Int?    // day of month (1-31)
+  isActive       Boolean @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  entries FixedExpenseEntry[]
+}
+
+model FixedExpenseEntry {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  fixedExpenseId String
+  fixedExpense   FixedExpense @relation(fields: [fixedExpenseId], references: [id])
+  monthYear      String       // "2026-01"
+  expectedAmount Float        // can override the template amount
+  actualAmount   Float?
+  isPaid         Boolean      @default(false)
+  isCash         Boolean      @default(false)
+  paidDate       DateTime?
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([userId, fixedExpenseId, monthYear])
+}
+
+// ──────────────────────────────────────────────
+// 4. Credit Cards (SINGLE SOURCE OF TRUTH for debt)
+//    Net Worth liabilities are derived from here.
+// ──────────────────────────────────────────────
+model CreditCard {
+  id          String  @id @default(cuid())
+  accountName String
+  creditLimit Float
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  entries CreditCardEntry[]
+}
+
+model CreditCardEntry {
+  id              String     @id @default(cuid())
+  userId          String
+  user            User       @relation(fields: [userId], references: [id])
+  creditCardId    String
+  creditCard      CreditCard @relation(fields: [creditCardId], references: [id])
+  monthYear       String
+  startingBalance Float
+  expectedPayment Float?
+  actualPayment   Float      @default(0)
+  interestAccrued Float      @default(0)
+  // endingBalance = startingBalance - actualPayment + interestAccrued (COMPUTED)
+  rewardsEarned   Float      @default(0)
+  notes           String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@unique([userId, creditCardId, monthYear])
+}
+
+// ──────────────────────────────────────────────
+// 5. Investment & Asset Accounts
+// ──────────────────────────────────────────────
+model InvestmentAccount {
+  id          String  @id @default(cuid())
+  accountName String
+  category    String  // Roth IRA, 401(k), Trading, Savings
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  entries      InvestmentEntry[]
+  savingsGoals SavingsGoal[]
+}
+
+model InvestmentEntry {
+  id                  String            @id @default(cuid())
+  userId              String
+  user                User              @relation(fields: [userId], references: [id])
+  investmentAccountId String
+  investmentAccount   InvestmentAccount @relation(fields: [investmentAccountId], references: [id])
+  monthYear           String
+  startingBalance     Float
+  contributions       Float             @default(0)
+  endingBalance       Float
+  // monthlyReturnDollar = endingBalance - startingBalance - contributions (COMPUTED)
+  // monthlyReturnPercent:
+  //   base = startingBalance + contributions
+  //   if base == 0 → null (guard against div/0)
+  //   else → (endingBalance - base) / base (COMPUTED)
+  notes               String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@unique([userId, investmentAccountId, monthYear])
+}
+
+// ──────────────────────────────────────────────
+// 6. Payroll (W-2 / structured income)
+// ──────────────────────────────────────────────
+model PayrollEntry {
+  id                     String   @id @default(cuid())
+  userId                 String
+  user                   User     @relation(fields: [userId], references: [id])
+  monthYear              String
+  payDate                DateTime
+  grossIncome            Float
+  federalTax             Float    @default(0)
+  stateTax               Float    @default(0)
+  ssTax                  Float    @default(0)
+  medicareTax            Float    @default(0)
+  hsa                    Float    @default(0)
+  dentalBenefit          Float    @default(0)
+  medicalBenefit         Float    @default(0)
+  visionBenefit          Float    @default(0)
+  lifeBenefit            Float    @default(0)
+  retirementContribution Float    @default(0) // Roth/401k
+  otherDeductions        Float    @default(0)
+  // takeHomePay = gross - sum(all deductions) (COMPUTED)
+  notes                  String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@index([userId, monthYear])
+}
+
+// ──────────────────────────────────────────────
+// 7. Income (one-off & non-payroll)
+// ──────────────────────────────────────────────
+model Income {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  date        DateTime
+  monthYear   String
+  description String
+  amount      Float
+  categoryId  String   // FK to Category (type=INCOME)
+  isTaxable   Boolean  @default(true)
+  isRecurring Boolean  @default(false)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId, monthYear])
+}
+
+// ──────────────────────────────────────────────
+// 8. Net Worth Snapshots (monthly rollup)
+//    Credit card debt is DERIVED from CreditCardEntry.
+//    Investment balances DERIVED from InvestmentEntry.
+// ──────────────────────────────────────────────
+model NetWorthSnapshot {
+  id                String @id @default(cuid())
+  userId            String
+  user              User   @relation(fields: [userId], references: [id])
+  monthYear         String
+  // Manually entered asset values
+  realEstateValue   Float  @default(0)
+  vehicleValue      Float  @default(0)
+  otherAssets       Float  @default(0)
+  // Manually entered non-credit-card liabilities
+  mortgagePrincipal Float  @default(0)
+  studentLoans      Float  @default(0)
+  autoLoans         Float  @default(0)
+  otherLiabilities  Float  @default(0)
+  // COMPUTED at query time (not stored):
+  //   totalInvestments  → SUM(InvestmentEntry.endingBalance) for this monthYear
+  //   totalCashBalances → derived from cash flow engine
+  //   totalCreditDebt   → SUM(CreditCardEntry ending balances) for this monthYear
+  //   totalAssets       → realEstate + vehicle + otherAssets + totalInvestments + totalCash
+  //   totalLiabilities  → mortgage + student + auto + other + totalCreditDebt
+  //   netWorth          → totalAssets - totalLiabilities
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([userId, monthYear])
+}
+
+// ──────────────────────────────────────────────
+// 9. Savings Goals
+// ──────────────────────────────────────────────
+model SavingsGoal {
+  id                    String             @id @default(cuid())
+  userId                String
+  user                  User               @relation(fields: [userId], references: [id])
+  name                  String             // "Emergency Fund", "Vacation", "House Project"
+  targetAmount          Float
+  currentAmount         Float              @default(0)
+  targetDate            DateTime?
+  investmentAccountId   String?            // optional link to an InvestmentAccount
+  investmentAccount     InvestmentAccount?  @relation(fields: [investmentAccountId], references: [id])
+  isCompleted           Boolean            @default(false)
+  notes                 String?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  @@index([userId])
+}
