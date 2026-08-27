@@ -1,6 +1,7 @@
 import { Button, Card, EmptyState, StatGrid, Text } from "@zach-ofalltrades/juice";
 import { useNavigate } from "react-router";
 import { prisma } from "~/db.server";
+import { requireUser } from "~/lib/auth.server";
 import {
   computeAvailableCredit,
   computeEndingBalance,
@@ -24,22 +25,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
   const monthYear = url.searchParams.get("month") || currentMonthYear();
 
-  // Get the default user
-  const user = await prisma.user.findFirst();
-  if (!user) {
-    return {
-      monthYear,
-      monthLabel: monthYearLabel(monthYear),
-      kpis: {
-        netWorth: 0,
-        availableCredit: 0,
-        endingCash: 0,
-        savingsRate: 0,
-        totalSpending: 0,
-        totalIncome: 0,
-      },
-    };
-  }
+  const user = await requireUser();
 
   // Fetch all data for this month in parallel
   const [
