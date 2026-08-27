@@ -1,5 +1,6 @@
 import { Badge, Button, Card, EmptyState, Row, Text } from "@zach-ofalltrades/juice";
 import { prisma } from "~/db.server";
+import { requireUser } from "~/lib/auth.server";
 import { CATEGORY_TYPES } from "~/lib/constants";
 import type { Route } from "./+types/categories";
 
@@ -11,8 +12,7 @@ export function meta() {
 }
 
 export async function loader() {
-  const user = await prisma.user.findFirst();
-  if (!user) return { categories: [], categoryTypes: Object.values(CATEGORY_TYPES) };
+  const user = await requireUser();
 
   const categories = await prisma.category.findMany({
     where: { userId: user.id },
