@@ -41,7 +41,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     prisma.transaction.findMany({ where: { userId: user.id, monthYear } }),
     prisma.payrollEntry.findMany({ where: { userId: user.id, monthYear } }),
     prisma.income.findMany({ where: { userId: user.id, monthYear } }),
-    prisma.creditCard.findMany({ where: { isActive: true } }),
+    prisma.creditCard.findMany({ where: { userId: user.id, isActive: true } }),
     prisma.creditCardEntry.findMany({ where: { userId: user.id, monthYear } }),
     prisma.investmentEntry.findMany({ where: { userId: user.id, monthYear } }),
     prisma.fixedExpenseEntry.findMany({ where: { userId: user.id, monthYear } }),
