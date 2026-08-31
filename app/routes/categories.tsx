@@ -1,4 +1,4 @@
-import { Badge, Button, Card, EmptyState, Row, Text } from "@zach-ofalltrades/juice";
+import { Badge, Button, Card, EmptyState, Row, Table, Text } from "@zach-ofalltrades/juice";
 import { prisma } from "~/db.server";
 import { requireUser } from "~/lib/auth.server";
 import { CATEGORY_TYPES } from "~/lib/constants";
@@ -75,38 +75,38 @@ export default function Categories({ loaderData }: Route.ComponentProps) {
               <Badge>{cats.length}</Badge>
             </Card.Header>
             <Card.Body>
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Color</th>
-                    <th>Name</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <Table>
+                <Table.Head>
+                  <Table.Row>
+                    <Table.HeaderCell>Color</Table.HeaderCell>
+                    <Table.HeaderCell>Name</Table.HeaderCell>
+                    <Table.HeaderCell>Status</Table.HeaderCell>
+                  </Table.Row>
+                </Table.Head>
+                <Table.Body>
                   {cats.map((cat) => (
-                    <tr key={cat.id}>
-                      <td>
+                    <Table.Row key={cat.id}>
+                      <Table.Cell>
                         <span
                           className="category-dot"
                           style={{ backgroundColor: cat.color || "#6366f1" }}
                         />
-                      </td>
-                      <td style={{ color: "var(--color-text-primary)" }}>
+                      </Table.Cell>
+                      <Table.Cell style={{ color: "var(--color-text-primary)" }}>
                         {cat.name}
                         {cat.isDefault && (
                           <Badge style={{ marginLeft: "var(--space-2)" }}>Default</Badge>
                         )}
-                      </td>
-                      <td>
+                      </Table.Cell>
+                      <Table.Cell>
                         <Badge variant={cat.isActive ? "success" : "danger"}>
                           {cat.isActive ? "Active" : "Inactive"}
                         </Badge>
-                      </td>
-                    </tr>
+                      </Table.Cell>
+                    </Table.Row>
                   ))}
-                </tbody>
-              </table>
+                </Table.Body>
+              </Table>
             </Card.Body>
           </Card>
         ))
